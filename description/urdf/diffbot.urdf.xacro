@@ -5,9 +5,6 @@
 
   <xacro:include filename="$(find diffdrive_msp432)/urdf/diffbot_description.urdf.xacro" />
 
-  <!-- Import Rviz colors -->
-  <xacro:include filename="$(find diffdrive_msp432)/urdf/diffbot.materials.xacro" />
-
   <!-- Import diffbot ros2_control description -->
   <xacro:include filename="$(find diffdrive_msp432)/ros2_control/diffbot.ros2_control.xacro" />
 
