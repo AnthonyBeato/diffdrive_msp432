@@ -227,8 +227,11 @@ hardware_interface::return_type diffdrive_msp432 ::DiffDriveMSP432Hardware::writ
     return hardware_interface::return_type::ERROR;
   }
 
-  int motor_l_counts_per_loop = wheel_l_.cmd / wheel_l_.rads_per_count / cfg_.loop_rate;
-  int motor_r_counts_per_loop = wheel_r_.cmd / wheel_r_.rads_per_count / cfg_.loop_rate;
+  // Factor de escala arbitrario
+  float scale_factor = 100.0; 
+
+  int motor_l_counts_per_loop = (wheel_l_.cmd  * scale_factor) / wheel_l_.rads_per_count / cfg_.loop_rate;
+  int motor_r_counts_per_loop = (wheel_r_.cmd * scale_factor) / wheel_r_.rads_per_count / cfg_.loop_rate;
 
  // Print the values that will be sent to the motors
   RCLCPP_INFO(

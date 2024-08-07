@@ -25,7 +25,7 @@ LibSerial::BaudRate convert_baud_rate(int baud_rate)
     case 230400: return LibSerial::BaudRate::BAUD_230400;
     default:
       std::cout << "Error! Baud rate " << baud_rate << " not supported! Default to 57600" << std::endl;
-      return LibSerial::BaudRate::BAUD_57600;
+      return LibSerial::BaudRate::BAUD_9600;
   }
 }
 
