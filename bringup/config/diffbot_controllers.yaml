@@ -35,6 +35,9 @@ diffbot_base_controller:
     use_stamped_vel: false
     #velocity_rolling_window_size: 10
 
+    publish_limited_velocity: true
+
+
     # Velocity and acceleration limits
     # Whenever a min_* is unspecified, default to -max_*
     linear.x.has_velocity_limits: true
