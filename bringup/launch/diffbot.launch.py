@@ -123,6 +123,8 @@ def generate_launch_description():
         nodes = create_robot_nodes("robot_1")
     elif hostname == "rpirobot2":
         nodes = create_robot_nodes("robot_2")
+    elif hostname == "robot-gym-vm":
+        nodes = create_robot_nodes("robot_1")
     else:
         raise RuntimeError(f"Unknown hostname: {hostname}")
 
