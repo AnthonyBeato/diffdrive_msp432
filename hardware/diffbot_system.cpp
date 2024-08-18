@@ -35,14 +35,9 @@ hardware_interface::CallbackReturn DiffDriveMSP432Hardware::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // Poniendo prefijo en caso de existir 
-  std::string prefix = "";
-  if (info_.hardware_parameters.find("prefix") != info_.hardware_parameters.end()) {
-    prefix = info_.hardware_parameters.at("prefix");
-  }
-
-  cfg_.left_wheel_name = prefix + info_.hardware_parameters["left_wheel_name"];
-  cfg_.right_wheel_name = prefix + info_.hardware_parameters["right_wheel_name"];
+  cfg_.prefix = info_.hardware_parameters["prefix"];
+  cfg_.left_wheel_name = cfg_.prefix + info_.hardware_parameters["left_wheel_name"];
+  cfg_.right_wheel_name = cfg_.prefix + info_.hardware_parameters["right_wheel_name"];
   cfg_.loop_rate = std::stof(info_.hardware_parameters["loop_rate"]);
   cfg_.device = info_.hardware_parameters["device"];
   cfg_.baud_rate = std::stoi(info_.hardware_parameters["baud_rate"]);

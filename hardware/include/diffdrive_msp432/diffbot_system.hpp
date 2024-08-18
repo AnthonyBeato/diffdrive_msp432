@@ -41,6 +41,7 @@ class DiffDriveMSP432Hardware : public hardware_interface::SystemInterface
 
 struct Config
 {
+  std::string prefix = "";
   std::string left_wheel_name = "";
   std::string right_wheel_name = "";
   float loop_rate = 0.0;
