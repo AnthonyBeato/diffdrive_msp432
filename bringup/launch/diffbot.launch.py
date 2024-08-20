@@ -23,110 +23,104 @@ import socket
 
 
 def generate_launch_description():
-
-    def create_robot_nodes(namespace):
-        # Get URDF via xacro
-        robot_description_content = Command(
-            [
-                PathJoinSubstitution([FindExecutable(name="xacro")]),
-                " ",
-                PathJoinSubstitution(
-                    [FindPackageShare("diffdrive_msp432"), "urdf", "diffbot.urdf.xacro"]
-                ),
-            ]
-        )
-        robot_description = {"robot_description": robot_description_content}
-
-        robot_controllers = PathJoinSubstitution(
-            [
-                FindPackageShare("diffdrive_msp432"),
-                "config",
-                "diffbot_controllers.yaml",
-            ]
-        )
-
-        rviz_config_file = PathJoinSubstitution(
-            [FindPackageShare("diffdrive_msp432"), "rviz", "diffbot.rviz"]
-        )
-
-
-        control_node = Node(
-            package="controller_manager",
-            executable="ros2_control_node",
-            parameters=[robot_description, robot_controllers],
-            output="both",
-            namespace=namespace
-        )
-
-        robot_state_pub_node = Node(
-            package="robot_state_publisher",
-            executable="robot_state_publisher",
-            output="both",
-            parameters=[robot_description],
-            namespace=namespace,
-            remappings=[
-                (f"/{namespace}/diff_drive_controller/cmd_vel_unstamped", f"/{namespace}/cmd_vel"),
-            ],
-        )
-
-        rviz_node = Node(
-            package="rviz2",
-            executable="rviz2",
-            name="rviz2",
-            output="log",
-            arguments=["-d", rviz_config_file],
-        )
-
-        joint_state_broadcaster_spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["joint_state_broadcaster", "--controller-manager", f"/{namespace}/controller_manager"],
-            namespace=namespace,
-        )
-
-        robot_controller_spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["diffbot_base_controller", "--controller-manager", f"/{namespace}/controller_manager"],
-            namespace=namespace,
-        )
-
-        # Delay rviz start after `joint_state_broadcaster`
-        delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=joint_state_broadcaster_spawner,
-                on_exit=[rviz_node],
-            )
-        )
-
-        # Delay start of robot_controller after `joint_state_broadcaster`
-        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=joint_state_broadcaster_spawner,
-                on_exit=[robot_controller_spawner],
-            )
-        )
-
-        return [
-            control_node,
-            robot_state_pub_node,
-            joint_state_broadcaster_spawner,
-            delay_rviz_after_joint_state_broadcaster_spawner,
-            delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        ]
-    
-    # Hostname de RPI
+    # Obtén el hostname de la RPI para determinar su prefijo
     hostname = socket.gethostname()
-
-    # Asignando namespace basado en el hostname
-    if hostname == "rpirobot1":
-        nodes = create_robot_nodes("robot_1")
-    elif hostname == "rpirobot2":
-        nodes = create_robot_nodes("robot_2")
-    elif hostname == "robot-gym-vm":
-        nodes = create_robot_nodes("robot_1")
+    if hostname == 'rpirobot1':
+        robot_id = 'robot_1'
+    elif hostname == 'rpirobot2':
+        robot_id = 'robot_2'
+    elif hostname == 'robot-gym-vm':
+        robot_id = 'robot_1'
     else:
-        raise RuntimeError(f"Unknown hostname: {hostname}")
+        robot_id = hostname  # Default, en caso de que haya más robots
 
+    # Get URDF via xacro
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [FindPackageShare("diffdrive_msp432"), "urdf", "diffbot.urdf.xacro"]
+            ),
+            " ",
+            f"prefix:={robot_id}_"
+        ]
+    )
+    robot_description = {"robot_description": robot_description_content}
+
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("diffdrive_msp432"),
+            "config",
+            "diffbot_controllers.yaml",
+        ]
+    )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("diffdrive_msp432"), "rviz", "diffbot.rviz"]
+    )
+
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description, robot_controllers],
+        namespace=robot_id,
+        output="both",
+    )
+    robot_state_pub_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="both",
+        parameters=[robot_description, {"frame_prefix": f"{robot_id}_"}],
+        namespace=robot_id,
+        remappings=[
+            ("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel"),
+        ],
+    )
+    # rviz_node = Node(
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     name="rviz2",
+    #     output="log",
+    #     namespace=robot_id,
+    #     arguments=["-d", rviz_config_file],
+    # )   
+
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        namespace=robot_id,
+        arguments=["joint_state_broadcaster", "--controller-manager", f"/{robot_id}/controller_manager"],
+    )
+
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        namespace=robot_id,
+        arguments=["diffbot_base_controller", "--controller-manager", f"/{robot_id}/controller_manager", "--activate"],
+    )
+
+    # # Delay rviz start after `joint_state_broadcaster`
+    # delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=joint_state_broadcaster_spawner,
+    #         on_exit=[rviz_node],
+    #     )
+    # )
+
+    # Delay start of robot_controller after `joint_state_broadcaster`
+    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[robot_controller_spawner],
+        )
+    )
+
+    nodes = [
+        control_node,
+        robot_state_pub_node,
+        joint_state_broadcaster_spawner,
+        # delay_rviz_after_joint_state_broadcaster_spawner,
+        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+    ]
 
     return LaunchDescription(nodes)
