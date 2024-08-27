@@ -19,24 +19,25 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-
 ## COMPILE
 add_library(
   diffdrive_msp432
   SHARED
   hardware/diffbot_system.cpp
+  hardware/diffdrive_msp432_sim_hardware.cpp  
 )
+
 target_compile_features(diffdrive_msp432 PUBLIC cxx_std_17)
 target_include_directories(diffdrive_msp432 PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
-$<INSTALL_INTERFACE:include/diffdrive_msp432>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+  $<INSTALL_INTERFACE:include/diffdrive_msp432>
 )
 ament_target_dependencies(
   diffdrive_msp432 PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
-target_link_libraries(diffdrive_msp432 PUBLIC serial)
+target_link_libraries(diffdrive_msp432 PUBLIC serial)  
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.

@@ -1,0 +1,9 @@
+<library path="diffdrive_msp432">
+  <class name="diffdrive_msp432/DiffDriveMSP432SimHardware"
+    type="diffdrive_msp432::DiffDriveMSP432SimHardware"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>
+    Simulated version of the DiffDriveMSP432 hardware interface. This is used for Gazebo simulations and does not require actual hardware.
+    </description>
+  </class>
+</library>

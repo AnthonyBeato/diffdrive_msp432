@@ -34,6 +34,9 @@
 #include "diffdrive_msp432/msp432_comms.hpp"
 #include "diffdrive_msp432/wheel.hpp"
 
+#include "rclcpp/publisher.hpp"
+#include "std_msgs/msg/string.hpp"
+
 namespace diffdrive_msp432
 {
 class DiffDriveMSP432Hardware : public hardware_interface::SystemInterface
@@ -94,12 +97,12 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
-
   MSP432Comms comms_;
   Config cfg_;
   Wheel wheel_l_;
   Wheel wheel_r_;
-};
+  };
+
 
 }  // namespace diffdrive_msp432
 
